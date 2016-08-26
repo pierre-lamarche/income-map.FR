@@ -1,7 +1,17 @@
 packages.available = installed.packages()
 if (!"tcltk" %in% row.names(packages.available)) install.packages("tcltk")
+if (!"maptools" %in% row.names(packages.available)) install.packages("maptools")
+if (!"rgdal" %in% row.names(packages.available)) install.packages("rgdal")
+if (!"XLConnect" %in% row.names(packages.available)) install.packages("XLConnect")
+if (!"sqldf" %in% row.names(packages.available)) install.packages("sqldf")
+if (!"RColorBrewer" %in% row.names(packages.available)) install.packages("RColorBrewer")
 
 library(tcltk)
+library(maptools)
+library(rgdal)
+gpclibPermit()
+library(XLConnect)
+library(sqldf)
 
 
 #### dl the data
@@ -20,4 +30,25 @@ unzip(zipfile=paste0(folder,"/data/archive.zip"),exdir=paste0(folder,"/data"))
 
 
 
+#### load map
+
+setwd(paste0(folder,"/map"))
+commune=readShapeSpatial("COMMUNE",proj4string=CRS("+init=epsg:2154"))
+commune_data = commune@data
+
+#### load data
+
+setwd(paste0(folder,"/data"))
+#options(java.parameters = "-Xmx1000m")
+gc()
+commune_revenu = readWorksheetFromFile("FILO_DISP_COM.xls",sheet="ENSEMBLE",header=TRUE,
+                                       startRow=6,endRow=32956)
+
+
+
+#### Tcl/Tk interface ------
+
+opening_windows = function(){
+  
+}
 

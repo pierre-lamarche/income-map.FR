@@ -1,5 +1,6 @@
 packages.available = installed.packages()
 if (!"tcltk" %in% row.names(packages.available)) install.packages("tcltk")
+if (!"tcltk2" %in% row.names(packages.available)) install.packages("tcltk2")
 if (!"maptools" %in% row.names(packages.available)) install.packages("maptools")
 if (!"rgdal" %in% row.names(packages.available)) install.packages("rgdal")
 if (!"XLConnect" %in% row.names(packages.available)) install.packages("XLConnect")
@@ -7,6 +8,7 @@ if (!"sqldf" %in% row.names(packages.available)) install.packages("sqldf")
 if (!"RColorBrewer" %in% row.names(packages.available)) install.packages("RColorBrewer")
 
 library(tcltk)
+library(tcltk2)
 library(maptools)
 library(rgdal)
 gpclibPermit()
@@ -29,20 +31,20 @@ folder = tk_choose.dir(default=getwd(),"Choose the folder where to store the dat
 
 dir.create(paste0(folder,"/map"))
 for (k in 1:length(list_shp)) {
-  download.file(url=paste0(url_map,"/",list_shp[k]),destfile = paste0(folder,"/map/",list_shp[k]),mode="wb")
+  download.file(url = paste0(url_map,"/",list_shp[k]),destfile = paste0(folder,"/map/",list_shp[k]),mode="wb")
 }
 ### unz(paste0(folder,"/map/archive.7z"),"COMMUNE.SHP",open="r")
 
 dir.create(paste0(folder,"/data"))
-download.file(url=url_filosofi,destfile = paste0(folder,"/data/archive.zip"),mode="wb")
-unzip(zipfile=paste0(folder,"/data/archive.zip"),exdir=paste0(folder,"/data"))
+download.file(url = url_filosofi,destfile = paste0(folder,"/data/archive.zip"),mode = "wb")
+unzip(zipfile = paste0(folder,"/data/archive.zip"), exdir = paste0(folder,"/data"))
 
 
 
 #### load map
 
 setwd(paste0(folder,"/map"))
-commune=readShapeSpatial("COMMUNE",proj4string=CRS("+init=epsg:2154"))
+commune <- readShapeSpatial("COMMUNE",proj4string = CRS("+init=epsg:2154"))
 commune_data <- commune@data
 
 #### load data
@@ -50,14 +52,64 @@ commune_data <- commune@data
 setwd(paste0(folder,"/data"))
 #options(java.parameters = "-Xmx1000m")
 gc()
-commune_revenu <- readWorksheetFromFile("FILO_DISP_COM.xls",sheet="ENSEMBLE",header=TRUE,
-                                       startRow=6,endRow=32956)
+commune_revenu <- readWorksheetFromFile("FILO_DISP_COM.xls",sheet = "ENSEMBLE",header = TRUE,
+                                       startRow = 6,endRow = 32956)
 
 
-
+########################################################################################
 #### Tcl/Tk interface ------
+########################################################################################
 
-opening_windows = function(){
-  
+openWinStart <- function() {
+  # function to start the app
+  # start window
+  winStart <- tktoplevel()
+  tktitle(winStart) <- "income-map.FR"
+  # 2 choices: either data at the municipality level, or squared data
+  winStart$env$butFilo <- ttkbutton(winStart, text = "Municipality level (FILOSOFI data)", 
+                                    width = -6, command = function() {
+                                      tkdestroy(winStart)
+                                      openWinFilo()}
+                                      )
+#  winStart$env$butCarr <- ttkbutton(winStart, text = "Squarred data (1km2 or 200m2)", 
+#                                    width = -6, command = tkdestroy(winStart))
+  tkgrid(winStart$env$butFilo, padx = 70, pady = 30)
+#  tkgrid(winStart$env$butCarr, padx = 70, pady = 30)
 }
 
+openWinFilo <- function() {
+  # function to start Filosofi part
+  # open the window
+  winFilo <- tktoplevel()
+  tktitle(winFilo) <- "income-map.FR - FILOSOFI"
+  # 3 choices (button radio) - France, NUTS2, NUTS3
+  winFilo$env$rb1 <- tk2radiobutton(winFilo)
+  winFilo$env$rb2 <- tk2radiobutton(winFilo)
+  winFilo$env$rb3 <- tk2radiobutton(winFilo)
+  typeZone <- tclVar("ALL")
+  tkconfigure(winFilo$env$rb1, variable = typeZone, value = "ALL")
+  tkconfigure(winFilo$env$rb2, variable = typeZone, value = "REG")
+  tkconfigure(winFilo$env$rb3, variable = typeZone, value = "DEPT")
+  # display the radio buttons
+  tkgrid(tk2label(winFilo, text = "Choose the geographical level for the map:"),
+         columnspan = 2, padx = 10, pady = c(15, 5))
+  tkgrid(tk2label(winFilo, text = "France"), winFilo$env$rb1,
+         padx = 10, pady = c(0, 5))
+  tkgrid(tk2label(winFilo, text = "Regional level (NUTS 2)"), winFilo$env$rb2,
+         padx = 10, pady = c(0, 5))
+  tkgrid(tk2label(winFilo, text = "Departement level (NUTS 3)"), winFilo$env$rb3,
+         padx = 10, pady = c(0, 5))
+  # display the ok button
+  winFilo$env$butOK <- tk2button(winFilo, text = "OK", width = -6, command = function() {
+    tkdestroy(winFilo)
+    winFiloOnOk()}
+    )
+  tkgrid(winFilo$env$butOK, columnspan = 2, padx = 10, pady = c(5, 15))
+  tkfocus(winFilo)
+}
+
+winFiloOnOk <- function() {
+  # function for the OK button on window Filosofi
+}
+
+openWinStart()

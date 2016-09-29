@@ -2,7 +2,7 @@ require(sqldf)
 require(RColorBrewer)
 
 
-map_france_income <- function(map,data,type_zone="ALL",indicator="Q212",zone=NULL) {
+map_france_income <- function(map, data, type_zone = "ALL", indicator = "Q212", zone = NULL) {
   # map_france_income function
   # function to generate the data for the map
   # Parms:
@@ -22,11 +22,11 @@ map_france_income <- function(map,data,type_zone="ALL",indicator="Q212",zone=NUL
   # critical checks
   if (is.na(map)) stop("Parameter map is missing.")
   if (is.na(data)) stop("Parameter data is missing.")
-  if (!exists(as.character(parse(text=map)))) stop(paste0("Object ",map," cannot be found."))
-  if (!exists(as.character(parse(text=data)))) stop(paste0("Object ",data," cannot be found."))
+  if (!exists(as.character(parse(text = map)))) stop(paste0("Object ",map," cannot be found."))
+  if (!exists(as.character(parse(text = data)))) stop(paste0("Object ",data," cannot be found."))
   # store data
-  MAP <- eval(parse(text=map))
-  DATA <- eval(parse(text=data))
+  MAP <- eval(parse(text = map))
+  DATA <- eval(parse(text = data))
   # check parameter type_zone
   if (!type_zone %in% c("ALL","DEPT","REG")) stop("Unknown geographical level.")
   # check parameters type_zone + zone
@@ -59,7 +59,7 @@ map_france_income <- function(map,data,type_zone="ALL",indicator="Q212",zone=NUL
 
 #### function to select the number of categories
 
-select_legend <- function(x,cutoff_points) {
+select_legend <- function(x, cutoff_points) {
   
   nclasses <- length(cutoff_points)
   colors <- c(brewer.pal(ceiling(nclasses/2),"OrRd"),brewer.pal(ceiling(nclasses/2),"GnBu"))

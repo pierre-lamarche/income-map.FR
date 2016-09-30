@@ -57,6 +57,22 @@ map_france_income <- function(map, data, type_zone = "ALL", indicator = "Q212", 
 }
 
 
+generateListZone <- function(typeZone) {
+  # function that will select in the database `commune_data` the list of possible zones
+  # for a given type of zone
+  # Parms:
+  # - typeZone: designates the type of zone - "REG" (NUTS2) or "DEPT" (NUTS3)
+  #
+  # Returns: an object containing the list of possible zones and their names
+  
+  listZ <- sqldf(paste0("select distinct CODE_", typeZone, " from commune_data 
+                        order by CODE_", typeZone))
+  listN <- sqldf(paste0("select distinct NOM_", typeZone, " from commune_data 
+                        order by CODE_", typeZone))
+  return(list(CODE_ZONE = listZ, NOM_ZONE = listN))
+}
+
+
 #### function to select the number of categories
 
 select_legend <- function(x, cutoff_points) {

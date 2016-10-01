@@ -6,6 +6,7 @@ if (!"rgdal" %in% row.names(packages.available)) install.packages("rgdal")
 if (!"XLConnect" %in% row.names(packages.available)) install.packages("XLConnect")
 if (!"sqldf" %in% row.names(packages.available)) install.packages("sqldf")
 if (!"RColorBrewer" %in% row.names(packages.available)) install.packages("RColorBrewer")
+if (!"classInt" %in% row.names(packages.available)) install.packages("classInt")
 
 library(tcltk)
 library(tcltk2)
@@ -14,7 +15,7 @@ library(rgdal)
 gpclibPermit()
 library(XLConnect)
 library(sqldf)
-
+library(classInt)
 
 
 
@@ -89,6 +90,8 @@ openWinStart <- function() {
 
 openWinFilo <- function() {
   # function to start Filosofi part
+  # first download the data
+  #downloadFilo()
   # open the window
   winFilo <- tktoplevel()
   tktitle(winFilo) <- "income-map.FR - FILOSOFI"
@@ -112,7 +115,7 @@ openWinFilo <- function() {
   # display the ok button
   winFilo$env$butOK <- tk2button(winFilo, text = "OK", width = -6, command = function() {
     tkdestroy(winFilo)
-    winFiloOnOk(typeZone)}
+    winFiloOnOk(tclvalue(typeZone))}
     )
   tkgrid(winFilo$env$butOK, columnspan = 2, padx = 10, pady = c(5, 15))
   tkfocus(winFilo)
@@ -126,28 +129,37 @@ winFiloOnOk <- function(tZ) {
     if (tZ == "REG") {
       title <- "region (NUTS-2)"
     } else title <- "departement (NUTS-3)"
-    zone <- selectZone(tZ, title)
-    generateMapFR(tZ, zone)
+    winSelectZone(tZ, title)
   }
 }
 
-selectZone <- function(typeZone, title) {
+winSelectZone <- function(typeZone, title) {
   # function opening a window to select the zone
   # Parms: 
   # - typeZone: type of zone to select (NUTS2 or NUTS3) - "REG" or "DEPT"
   # - title: title for the window
   
   winSelect <- tktoplevel()
-  tktitle(winSelect) <- title
-  winSelect$env$combo <- tk2combobox(winSelect)
-  tkgrid(winSelect, padx = 10, pady = 15)
+  tktitle(winSelect) <- paste0("Select the ",title)
+  winSelect$env$lst <- tk2listbox(winSelect, height = 10, selectmode = "single")
+  tkgrid(tk2label(winSelect, text = paste0("Select the ", title, " which you want to map"), justify = "left"),
+         padx = 20, pady =c(15, 5), sticky = "w")
+  tkgrid(winSelect$env$lst, padx = 10, pady = c(5, 10))
   
   listZone <- generateListZone(typeZone)
   listChoice <- paste0(listZone$CODE_ZONE[,1]," - ",listZone$NOM_ZONE[,1])
-  tk2list.set(winSelect$env$combo, listChoice)
+  for (z in listChoice)
+    tkinsert(winSelect$env$lst, "end", z)
+  tkselection.set(winSelect$env$lst, 0)
+
+  winSelect$env$butOK <-tk2button(winSelect, text = "OK", width = -6, command = function() {
+    choosedZone <- listZone$CODE_ZONE[as.numeric(tkcurselection(winSelect$env$lst)) + 1,1]
+    print(choosedZone)
+    tkdestroy(winSelect)
+    generateMapFR(typeZone,choosedZone)
+  })
+  tkgrid(winSelect$env$butOK, padx = 10, pady = c(5, 15))
   
-  choosedZone <- tclVar(listChoice[1])
-  tkconfigure(winSelect$env$combo, textvariable = choosedZone)
 }
 
 openWinStart()

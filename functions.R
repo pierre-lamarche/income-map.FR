@@ -2,8 +2,7 @@ require(sqldf)
 require(RColorBrewer)
 
 
-map_france_income <- function(map, data, type_zone = "ALL", indicator = "Q212", zone = NULL) {
-  # map_france_income function
+mapFranceIncome <- function(map, data, type_zone = "ALL", indicator = "Q212", zone = NULL) {
   # function to generate the data for the map
   # Parms:
   # - map: name of the SpatialPolygonDataFrame object
@@ -56,7 +55,6 @@ map_france_income <- function(map, data, type_zone = "ALL", indicator = "Q212", 
   return(commune_tot)
 }
 
-
 generateListZone <- function(typeZone) {
   # function that will select in the database `commune_data` the list of possible zones
   # for a given type of zone
@@ -72,10 +70,33 @@ generateListZone <- function(typeZone) {
   return(list(CODE_ZONE = listZ, NOM_ZONE = listN))
 }
 
+generateMapFR <- function(typeZone = "ALL", zone = NULL) {
+  # function generating the png file with the requested map
+  # Parms:
+  # - typeZone: same parameter as type_zone in `mapFranceIncome`
+  # - zone: idem
+  # 
+  # Returns: nothing - but generate a variable `tempFile` containing the name of the 
+  # pnf file.
+  
+  mapData <- mapFranceIncome(map = "commune", data = "commune_revenu", type_zone = typeZone
+                             ,zone = zone)
+  # name of the temporary file
+  tempFile <- tempfile(fileext = ".png")
+  assign("tempFile", tempFile, env = .GlobalEnv)
+  # create the vector of colors
+  colCode <- selectLegend(x = mapData@data$Q212, cutoff_points = c(0,10000,15000,20000,30000,50000))
+  
+  png(filename=tempFile,width=200,height=200,units='mm',res=700)
+  plot(mapData,col=colCode,border = FALSE)
+  legend("topleft",legend=c("Moins de 10 000 euros","10 à 15 000 euros","15 à 20 000 euros","20 à 30 000 euros","35 000 euros et plus","Données anonymisées"),col=c(attr(colCode,"palette"),"lightgrey"),pch=15,cex=0.5)
+  dev.off()
+}
+
 
 #### function to select the number of categories
 
-select_legend <- function(x, cutoff_points) {
+selectLegend <- function(x, cutoff_points) {
   
   nclasses <- length(cutoff_points)
   colors <- c(brewer.pal(ceiling(nclasses/2),"OrRd"),brewer.pal(ceiling(nclasses/2),"GnBu"))
@@ -83,4 +104,5 @@ select_legend <- function(x, cutoff_points) {
   colCode <- findColours(classes,colors)
   
   colCode[is.na(colCode)] <- "lightgrey"
+  return(colCode)
 }

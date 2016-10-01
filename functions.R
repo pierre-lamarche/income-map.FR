@@ -86,14 +86,16 @@ generateMapFR <- function(typeZone = "ALL", zone = NULL) {
   mapData <- mapFranceIncome(map = "commune", data = "commune_revenu", type_zone = typeZone
                              ,zone = zone)
   # name of the temporary file
-  tempFile <- tempfile(fileext = ".png", tmpdir = getwd())
+  tempFile <- tempfile(fileext = ".png")
   assign("tempFile", tempFile, env = .GlobalEnv)
   # create the vector of colors
   colCode <- selectLegend(x = mapData@data$Q212, cutoff_points = c(0,10000,15000,20000,30000,50000))
 
-  png(filename=tempFile,width=85,height=85,units='mm',res=110)
+  png(filename = tempFile, width = 600, height = 600, units = 'px', res = 95)
   plot(mapData,col=colCode,border = FALSE)
-  legend("topleft",legend=c("Moins de 10 000 euros","10 à 15 000 euros","15 à 20 000 euros","20 à 30 000 euros","35 000 euros et plus","Données anonymisées"),col=c(attr(colCode,"palette"),"lightgrey"),pch=15,cex=0.5)
+  legend("topleft", legend=c("Moins de 10 000 euros","10 à 15 000 euros","15 à 20 000 euros",
+                             "20 à 30 000 euros","35 000 euros et plus","Données anonymisées"),
+         col=c(attr(colCode,"palette"),"lightgrey"),pch=15, cex = 0.6)
   dev.off()
   
   winDisplayMap(tempFile)
@@ -111,7 +113,7 @@ winDisplayMap <- function(path) {
   winDisMap$env$menuFile <- tk2menu(winDisMap$env$menu, tearoff = FALSE)
   # option Save the map
   tkadd(winDisMap$env$menuFile, "command", label = "Save map", 
-        command = function() saveMap(mapFile))
+        command = function() saveMap(path))
   # option Quit
   tkadd(winDisMap$env$menuFile, "command", label = "Quit", 
         command = function() tkdestroy(winDisMap))
@@ -119,11 +121,12 @@ winDisplayMap <- function(path) {
   tkadd(winDisMap$env$menu, "cascade", label = "File", menu = winDisMap$env$menuFile)
   
   # display the map
-  tkpack(ttklabel(winDisMap, image="imageMap", compound="image"), padx = 200, pady = 150)
+  tkpack(ttklabel(winDisMap, image="imageMap", compound="image"))
 }
 
 saveMap <- function(file) {
-  mapPath <- tclvalue(tkgetSaveFile(initialdir = getwd(), filetypes = "{{PNG files} {.png}}",
+  mapPath <- tclvalue(tkgetSaveFile(initialdir = getwd(), #intialfile = , 
+                                    filetypes = "{{PNG files} {.png}}",
                                     defaultextension = ".png"))
   file.copy(file, mapPath)
   file.remove(file)

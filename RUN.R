@@ -154,7 +154,6 @@ winSelectZone <- function(typeZone, title) {
 
   winSelect$env$butOK <-tk2button(winSelect, text = "OK", width = -6, command = function() {
     choosedZone <- listZone$CODE_ZONE[as.numeric(tkcurselection(winSelect$env$lst)) + 1,1]
-    print(choosedZone)
     tkdestroy(winSelect)
     generateMapFR(typeZone,choosedZone)
   })

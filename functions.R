@@ -43,15 +43,21 @@ mapFranceIncome <- function(map, data, type_zone = "ALL", indicator = "Q212", zo
   if (type_zone == "DEPT") type_zone <- "CODE_DEPT"
   if (type_zone == "REG") type_zone <- "CODE_REG"
   # build SQL request out of the parameters
-  commune_data <- MAP@data
+  communeData <- MAP@data
+  if (type_zone != "ALL") {
+    sql_req <- paste0("select * from communeData where ",type_zone," = '",zone,"'")
+    communeData <- sqldf(sql_req)
+  }
   sql_req <- paste0("select CODGEO, LIBGEO, NBMEN12, ",indicator,
-                    " from DATA where CODGEO in (select INSEE_COM from commune_data")
-  if (type_zone != "ALL") sql_req <- paste0(sql_req," where ",type_zone," = '",zone,"'")
-  sql_req <- paste0(sql_req,")")
+                    " from DATA where CODGEO in (select INSEE_COM from communeData)")
+#  if (type_zone != "ALL") sql_req <- paste0(sql_req," where ",type_zone," = '",zone,"'")
+#  sql_req <- paste0(sql_req,")")
   # extract data from `data` on the relevant area
   tab_revenu <- sqldf(sql_req)
   # merge with map information, get a SpatialPolygonDataFrame
-  commune_tot <- merge(MAP,tab_revenu,by.x="INSEE_COM",by.y="CODGEO",all = FALSE,all.y = TRUE)
+  comToMerge <- data.frame(INSEE_COM = communeData[,"INSEE_COM"])
+  MAP <- merge(MAP, comToMerge, by = "INSEE_COM", all = FALSE, all.y = TRUE)
+  commune_tot <- merge(MAP, tab_revenu, by.x = "INSEE_COM", by.y = "CODGEO", all = TRUE)
   return(commune_tot)
 }
 
@@ -82,15 +88,50 @@ generateMapFR <- function(typeZone = "ALL", zone = NULL) {
   mapData <- mapFranceIncome(map = "commune", data = "commune_revenu", type_zone = typeZone
                              ,zone = zone)
   # name of the temporary file
-  tempFile <- tempfile(fileext = ".png")
+  tempFile <- tempfile(fileext = ".png", tmpdir = getwd())
   assign("tempFile", tempFile, env = .GlobalEnv)
   # create the vector of colors
   colCode <- selectLegend(x = mapData@data$Q212, cutoff_points = c(0,10000,15000,20000,30000,50000))
-  
+
   png(filename=tempFile,width=200,height=200,units='mm',res=700)
   plot(mapData,col=colCode,border = FALSE)
   legend("topleft",legend=c("Moins de 10 000 euros","10 à 15 000 euros","15 à 20 000 euros","20 à 30 000 euros","35 000 euros et plus","Données anonymisées"),col=c(attr(colCode,"palette"),"lightgrey"),pch=15,cex=0.5)
   dev.off()
+  
+  winDisplayMap(tempFile)
+}
+
+winDisplayMap <- function(path) {
+  # create image out of the pgn file
+  mapFile <- system.file(path, package = "tcltk2")
+  mapImage <- tclVar()
+  tkimage.create("photo", mapImage, file = mapFile)
+  
+  winDisMap <- tktoplevel()
+  winDisMap$env$menu <- tk2menu(winDisMap)
+  # configure menu
+  tkconfigure(winDisMap, menu = winDisMap$env$menu)
+  # menu "File"
+  winDisMap$env$menuFile <- tk2menu(winDisMap$env$menu, tearoff = FALSE)
+  # option Save the map
+  tkadd(winDisMap$env$menuFile, "command", label = "Save map", 
+        command = function() saveMap(mapFile))
+  # option Quit
+  tkadd(winDisMap$env$menuFile, "command", label = "Quit", 
+        command = function() tkdestroy(winDisMap))
+  
+  tkadd(winDisMap$env$menu, "cascade", label = "File", menu = winDisMap$env$menuFile)
+  
+  # display the map
+  winDisMap$env$label <- tk2label(winDisMap, image = mapImage)
+  tkpack(winDisMap$env$label)
+}
+
+saveMap <- function(file) {
+  mapPath <- tclvalue(tkgetSaveFile(initialdir = getwd(), filetypes = "{{PNG files} {.png}}",
+                                    defaultextension = ".png"))
+  file.copy(file, mapPath)
+  file.remove(file)
 }
 
 

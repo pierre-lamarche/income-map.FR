@@ -8,3 +8,5 @@ INSEE's geographical data on income are available under various forms:
 This project also relies on IGN's data on administrative limits of the French territory, available [here](http://professionnels.ign.fr/geofla#tab-3).
 
 The scripts developped here automatically downloads the data from the websites, unzipped them in the designated folder and allows to generate maps out of them.
+
+Under [EUP License](http://ec.europa.eu/idabc/eupl.html).

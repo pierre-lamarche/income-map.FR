@@ -91,7 +91,7 @@ openWinStart <- function() {
 openWinFilo <- function() {
   # function to start Filosofi part
   # first download the data
-  #downloadFilo()
+  downloadFilo()
   # open the window
   winFilo <- tktoplevel()
   tktitle(winFilo) <- "income-map.FR - FILOSOFI"

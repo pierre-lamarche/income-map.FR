@@ -91,11 +91,11 @@ generateMapFR <- function(typeZone = "ALL", zone = NULL) {
   # create the vector of colors
   colCode <- selectLegend(x = mapData@data$Q212, cutoff_points = c(0,10000,15000,20000,30000,50000))
 
-  png(filename = tempFile, width = 600, height = 600, units = 'px', res = 95)
+  png(filename = tempFile, width = 900, height = 900, units = 'px')
   plot(mapData,col=colCode,border = FALSE)
   legend("topleft", legend=c("Moins de 10 000 euros","10 à 15 000 euros","15 à 20 000 euros",
                              "20 à 30 000 euros","35 000 euros et plus","Données anonymisées"),
-         col=c(attr(colCode,"palette"),"lightgrey"),pch=15, cex = 0.6)
+         col=c(attr(colCode,"palette"),"lightgrey"),pch=15, cex = 0.8)
   dev.off()
   
   winDisplayMap(tempFile)
@@ -114,6 +114,12 @@ winDisplayMap <- function(path) {
   # option Save the map
   tkadd(winDisMap$env$menuFile, "command", label = "Save map", 
         command = function() saveMap(path))
+  # option Reinitilise
+  tkadd(winDisMap$env$menuFile, "command", label = "Reinitialise map",
+        command = function() {
+          tkdestroy(winDisMap)
+          openWinStart()
+        })
   # option Quit
   tkadd(winDisMap$env$menuFile, "command", label = "Quit", 
         command = function() tkdestroy(winDisMap))

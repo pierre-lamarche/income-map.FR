@@ -50,8 +50,6 @@ mapFranceIncome <- function(map, data, type_zone = "ALL", indicator = "Q212", zo
   }
   sql_req <- paste0("select CODGEO, LIBGEO, NBMEN12, ",indicator,
                     " from DATA where CODGEO in (select INSEE_COM from communeData)")
-#  if (type_zone != "ALL") sql_req <- paste0(sql_req," where ",type_zone," = '",zone,"'")
-#  sql_req <- paste0(sql_req,")")
   # extract data from `data` on the relevant area
   tab_revenu <- sqldf(sql_req)
   # merge with map information, get a SpatialPolygonDataFrame
@@ -93,7 +91,7 @@ generateMapFR <- function(typeZone = "ALL", zone = NULL) {
   # create the vector of colors
   colCode <- selectLegend(x = mapData@data$Q212, cutoff_points = c(0,10000,15000,20000,30000,50000))
 
-  png(filename=tempFile,width=200,height=200,units='mm',res=700)
+  png(filename=tempFile,width=85,height=85,units='mm',res=110)
   plot(mapData,col=colCode,border = FALSE)
   legend("topleft",legend=c("Moins de 10 000 euros","10 à 15 000 euros","15 à 20 000 euros","20 à 30 000 euros","35 000 euros et plus","Données anonymisées"),col=c(attr(colCode,"palette"),"lightgrey"),pch=15,cex=0.5)
   dev.off()
@@ -103,9 +101,7 @@ generateMapFR <- function(typeZone = "ALL", zone = NULL) {
 
 winDisplayMap <- function(path) {
   # create image out of the pgn file
-  mapFile <- system.file(path, package = "tcltk2")
-  mapImage <- tclVar()
-  tkimage.create("photo", mapImage, file = mapFile)
+  tcl("image","create","photo", "imageMap", file=path)
   
   winDisMap <- tktoplevel()
   winDisMap$env$menu <- tk2menu(winDisMap)
@@ -123,8 +119,7 @@ winDisplayMap <- function(path) {
   tkadd(winDisMap$env$menu, "cascade", label = "File", menu = winDisMap$env$menuFile)
   
   # display the map
-  winDisMap$env$label <- tk2label(winDisMap, image = mapImage)
-  tkpack(winDisMap$env$label)
+  tkpack(ttklabel(winDisMap, image="imageMap", compound="image"), padx = 200, pady = 150)
 }
 
 saveMap <- function(file) {

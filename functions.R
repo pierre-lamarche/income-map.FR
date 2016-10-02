@@ -111,6 +111,11 @@ winDisplayMap <- function(path) {
   tkconfigure(winDisMap, menu = winDisMap$env$menu)
   # menu "File"
   winDisMap$env$menuFile <- tk2menu(winDisMap$env$menu, tearoff = FALSE)
+  # menu "Options"
+  winDisMap$env$menuOptions <- tk2menu(winDisMap$env$menu, tearoff = FALSE)
+  # menu "About
+  winDisMap$env$menuAbout <- tk2menu(winDisMap$env$menu, tearoff = FALSE)
+  # menu 'File' --- definition of options
   # option Save the map
   tkadd(winDisMap$env$menuFile, "command", label = "Save map", 
         command = function() saveMap(path))
@@ -123,8 +128,16 @@ winDisplayMap <- function(path) {
   # option Quit
   tkadd(winDisMap$env$menuFile, "command", label = "Quit", 
         command = function() tkdestroy(winDisMap))
+  # menu 'Options' --- definition of options
+  # option Legend
+  tkadd(winDisMap$env$menuOptions, "command", label = "Legend",
+        command = function() {
+          
+        })
   
   tkadd(winDisMap$env$menu, "cascade", label = "File", menu = winDisMap$env$menuFile)
+  tkadd(winDisMap$env$menu, "cascade", label = "Options", menu = winDisMap$env$menuOptions)
+  tkadd(winDisMap$env$menu, "cascade", label = "About", menu = winDisMap$env$menuAbout)
   
   # display the map
   tkpack(ttklabel(winDisMap, image="imageMap", compound="image"))

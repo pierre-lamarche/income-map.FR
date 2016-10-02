@@ -32,17 +32,26 @@ downloadFilo <- function() {
                 paste("LIMITE_COMMUNE",c("DBF","LYR","PRJ","SHP","SHX"),sep="."))
   url_filosofi <- "http://www.insee.fr/fr/ppp/bases-de-donnees/donnees-detaillees/filosofi/filosofi-2012/indic-struct-distrib-revenu/indic-struct-distrib-revenu-communes-2012.zip"
   
-  folder = tk_choose.dir(default=getwd(),"Choose the folder where to store the data:")
+  folder = tk_choose.dir(default=getwd(), 
+                         "Choose the folder where to store the data/where the data are stored:")
   
-  dir.create(paste0(folder,"/map"))
-  for (k in 1:length(list_shp)) {
-    download.file(url = paste0(url_map,"/",list_shp[k]),destfile = paste0(folder,"/map/",list_shp[k]),mode="wb")
+  checkMap <- checkExistFiles(paste0(folder,"/map"),list_shp)
+  
+  if (checkMap == FALSE) {
+    dir.create(paste0(folder,"/map"))
+    for (k in 1:length(list_shp)) {
+      download.file(url = paste0(url_map,"/",list_shp[k]),destfile = paste0(folder,"/map/",list_shp[k]),mode="wb")
+    }
   }
   ### unz(paste0(folder,"/map/archive.7z"),"COMMUNE.SHP",open="r")
   
-  dir.create(paste0(folder,"/data"))
-  download.file(url = url_filosofi,destfile = paste0(folder,"/data/archive.zip"),mode = "wb")
-  unzip(zipfile = paste0(folder,"/data/archive.zip"), exdir = paste0(folder,"/data"))
+  checkData <- checkExistFiles(paste0(folder,"/data"),"archive.zip")
+  
+  if (checkData == FALSE) {
+    dir.create(paste0(folder,"/data"))
+    download.file(url = url_filosofi,destfile = paste0(folder,"/data/archive.zip"),mode = "wb")
+    unzip(zipfile = paste0(folder,"/data/archive.zip"), exdir = paste0(folder,"/data"))
+  }
   
   #### load map
   
@@ -62,6 +71,30 @@ downloadFilo <- function() {
   assign("commune", commune, env = .GlobalEnv)
   assign("commune_data", commune_data, env = .GlobalEnv)
   assign("commune_revenu", commune_revenu, env = .GlobalEnv)
+  assign("initialRun", FALSE, env = .GlobalEnv)
+}
+
+checkExistFiles <- function(path, listFiles) {
+  # function to check the existence of the data for drawing the map
+  # Parms:
+  # - path: path where to check
+  # - listFiles: list of files whose existence has to be checked
+  #
+  # Returns:
+  # A boolean value (TRUE if exist, FALSE if not)
+  
+  wdDefault <- getwd()
+  if (!dir.exists(path)) {
+    value <- FALSE
+  } else {
+    setwd(path)
+    testExist <- sapply(listFiles, file.exists)
+    if (length(listFiles[testExist]) != length(listFiles)) {
+      value <- FALSE
+    } else value <- TRUE
+  }
+  setwd(wdDefault)
+  return(value)
 }
 
 
@@ -91,7 +124,9 @@ openWinStart <- function() {
 openWinFilo <- function() {
   # function to start Filosofi part
   # first download the data
-  downloadFilo()
+  if (initialRun) {
+    downloadFilo()
+  }
   # open the window
   winFilo <- tktoplevel()
   tktitle(winFilo) <- "income-map.FR - FILOSOFI"
@@ -161,4 +196,5 @@ winSelectZone <- function(typeZone, title) {
   
 }
 
+initialRun <- TRUE
 openWinStart()

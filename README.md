@@ -9,4 +9,10 @@ This project also relies on IGN's data on administrative limits of the French te
 
 The scripts developped here automatically downloads the data from the websites, unzipped them in the designated folder and allows to generate maps out of them.
 
+Some snapshots of the GUI:
+![snapshot1](https://github.com/pierre-lamarche/income-map.FR/blob/master/images/snapshot1.tiff)
+![snapshot2](https://github.com/pierre-lamarche/income-map.FR/blob/master/images/snapshot2.tiff)
+![snapshot3](https://github.com/pierre-lamarche/income-map.FR/blob/master/images/snapshot3.tiff)
+![snapshot4](https://github.com/pierre-lamarche/income-map.FR/blob/master/images/snapshot4.tiff)
+
 Under [EUP License](http://ec.europa.eu/idabc/eupl.html).

@@ -119,6 +119,7 @@ openWinStart <- function() {
 #                                    width = -6, command = tkdestroy(winStart))
   tkgrid(winStart$env$butFilo, padx = 70, pady = 30)
 #  tkgrid(winStart$env$butCarr, padx = 70, pady = 30)
+  tkfocus(winStart)
 }
 
 openWinFilo <- function() {
